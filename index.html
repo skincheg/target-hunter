@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+</head>
+<style>
+    .bt-spinner {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background-color: transparent;
+        border: 4px solid #222;
+        border-top-color: #009688;
+        -webkit-animation: 1s spin linear infinite;
+        animation: 1s spin linear infinite;
+        margin: 0 auto;
+        display: none;
+    }
+
+    @keyframes spin {
+        from {
+            -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+        }
+        to {
+            -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+        }
+    }
+</style>
+<body>
+<div class="container d-flex flex-column">
+    <div class="row p-4">
+        <h1>Users search</h1>
+        <form class="input-group mt-3 form row">
+            <input type="text" class="form-control col-9" name="name" placeholder="User's name">
+            <select class="custom-select col-3" name="sort">
+                <option value="0">по дате регистрации</option>
+                <option value="1" selected>по популярности</option>
+            </select>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="submit">Go</button>
+            </div>
+        </form>
+        <ul class="container list-unstyled mt-2 user-list">
+        </ul>
+        <div class="bt-spinner"></div>
+    </div>
+</div>
+
+<script>
+    const form = document.querySelector('.form');
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const q = form.querySelector('input[name="name"]').value;
+        const sort = form.querySelector('select[name="sort"]').value;
+        const loader = document.querySelector('.bt-spinner');
+        loader.style.display = 'block';
+        setTimeout(async () => {
+            const response = await fetch(`/functions/users_search.php?q=${q}&sort=${sort}`);
+            const json = await response.json();
+            console.log(json);
+
+            let fragment = '';
+            json['items'].forEach(user => {
+                fragment += `<li class="media d-flex align-items-center justify-content-between">
+                    <img style="width: 50px; height: 50px;" src="${user.photo_50}" class="mr-3">
+                    <div class="media-body">
+                        <h5>${user.first_name} ${user.last_name}(<a href="vk.com/id${user.id}">id ${user.id}</a>)</h5>
+                    </div>
+                    <button class="btn btn-outline-success ads-import" data-id="${user.id}">+</button>
+                </li>`;
+            });
+
+            document.querySelector('.user-list').innerHTML = fragment;
+
+            const btns = document.querySelectorAll('.ads-import');
+            btns.forEach(btn => btn.addEventListener('click', async (e) => await fetch(`/functions/ads_importTargetContacts.php?id=${e.target.dataset.id}`)));
+
+            loader.style.display = 'none';
+        }, 1000);
+    });
+</script>
+</body>
+</html>

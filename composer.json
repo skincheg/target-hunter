@@ -1,0 +1,6 @@
+{
+    "require": {
+        "vkcom/vk-php-sdk": "^5.101",
+        "mongodb/mongodb": "^1.7"
+    }
+}
